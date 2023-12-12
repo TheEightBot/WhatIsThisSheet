@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Controls.Shapes;
+﻿using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace MauiDrawer;
 
@@ -18,7 +20,7 @@ public struct DrawerStop
 [ContentProperty(nameof(DrawerContent))]
 public class Drawer : Grid
 {
-    private readonly double TouchBarHeight = 32d;
+    private readonly double _touchBarHeight = 32d;
 
     private readonly BoxView _touchOverlay;
 
@@ -64,16 +66,24 @@ public class Drawer : Grid
         set => SetValue(DrawerContentProperty, value);
     }
 
+    public static BindableProperty AllowDismissProperty =
+        BindableProperty.Create(nameof(AllowDismiss), typeof(bool), typeof(Drawer), false);
+
+    public bool AllowDismiss
+    {
+        get => (bool)GetValue(AllowDismissProperty);
+        set => SetValue(AllowDismissProperty, value);
+    }
+
     public static BindableProperty DrawerColorProperty =
     BindableProperty.Create(nameof(DrawerColor), typeof(Color), typeof(Drawer), Colors.White,
         propertyChanged:
-            (bindable, oldValue, newValue) =>
+            (bindable, _, newValue) =>
             {
                 if (bindable is not Drawer drawer)
                 {
                     return;
                 }
-
 
                 if (newValue is Color newColor)
                 {
@@ -89,6 +99,9 @@ public class Drawer : Grid
 
     public Drawer()
     {
+        this.CascadeInputTransparent = false;
+        this.InputTransparent = true;
+
         _drawerStops.Add(new DrawerStop { Measurement = DrawerStopMeasurement.Fixed, Value = 0 });
         _drawerStops.Add(new DrawerStop { Measurement = DrawerStopMeasurement.Percentage, Value = .33 });
         _drawerStops.Add(new DrawerStop { Measurement = DrawerStopMeasurement.Percentage, Value = .66 });
@@ -98,9 +111,9 @@ public class Drawer : Grid
             new RoundRectangle
             {
                 HeightRequest = 4,
-                WidthRequest = TouchBarHeight,
+                WidthRequest = _touchBarHeight,
                 CornerRadius = 2,
-                BackgroundColor =  Colors.DarkGray,
+                BackgroundColor = Colors.DarkGray,
                 HorizontalOptions = LayoutOptions.Center,
             };
 
@@ -113,7 +126,7 @@ public class Drawer : Grid
                 },
                 RowDefinitions =
                 {
-                    new RowDefinition(TouchBarHeight),
+                    new RowDefinition(_touchBarHeight),
                     new RowDefinition(GridLength.Star),
                 },
             };
@@ -141,12 +154,90 @@ public class Drawer : Grid
             {
                 GestureRecognizers = { _touchOverlayPanGesture },
                 BackgroundColor = Colors.Transparent,
-                HeightRequest = TouchBarHeight,
+                HeightRequest = _touchBarHeight,
                 VerticalOptions = LayoutOptions.Start,
             };
 
         this.Children.Add(_mainContainer);
         this.Children.Add(_touchOverlay);
+    }
+
+    public void Dismiss()
+    {
+        _touchOverlay.GestureRecognizers.Clear();
+
+        var visibleHeight = this.Height;
+
+        var allowDismiss = AllowDismiss;
+
+        var bottomSafeArea = allowDismiss ? this.ParentPage()?.On<iOS>()?.SafeAreaInsets().Bottom ?? 0 : 0;
+
+        var touchBarDisplayHeight = allowDismiss ? 0 : _touchBarHeight;
+
+        var dismissAnimation =
+            new Animation(
+                x =>
+                {
+                    _mainContainer.TranslationY = x;
+                    _mainContainer.Padding = new Thickness(_mainContainer.Margin.Left, _mainContainer.Margin.Top, _mainContainer.Margin.Right, x);
+                },
+                _mainContainer.TranslationY,
+                visibleHeight + bottomSafeArea - touchBarDisplayHeight,
+                Easing.SinInOut);
+
+        dismissAnimation
+            .Commit(
+                this,
+                nameof(Dismiss),
+                finished:
+                    (_, __) =>
+                    {
+                        Dispatcher.Dispatch(
+                            () =>
+                            {
+                                _touchOverlay.TranslationY = _mainContainer.TranslationY;
+                                _touchOverlay.GestureRecognizers.Add(_touchOverlayPanGesture);
+                            });
+                    });
+    }
+
+    public void Display(double displayPercentage)
+    {
+        _touchOverlay.GestureRecognizers.Clear();
+
+        var visibleHeight = this.Height;
+
+        var allowDismiss = AllowDismiss;
+
+        var bottomSafeArea = allowDismiss ? this.ParentPage()?.On<iOS>()?.SafeAreaInsets().Bottom ?? 0 : 0;
+
+        var touchBarDisplayHeight = allowDismiss ? 0 : _touchBarHeight;
+
+        var dismissAnimation =
+            new Animation(
+                x =>
+                {
+                    _mainContainer.TranslationY = x;
+                    _mainContainer.Padding = new Thickness(_mainContainer.Margin.Left, _mainContainer.Margin.Top, _mainContainer.Margin.Right, x);
+                },
+                _mainContainer.TranslationY,
+                (visibleHeight * (1d - Math.Max(Math.Min(displayPercentage, 1.0d), 0d))) - touchBarDisplayHeight,
+                Easing.SinInOut);
+
+        dismissAnimation
+            .Commit(
+                this,
+                nameof(Dismiss),
+                finished:
+                    (_, __) =>
+                    {
+                        Dispatcher.Dispatch(
+                            () =>
+                            {
+                                _touchOverlay.TranslationY = _mainContainer.TranslationY;
+                                _touchOverlay.GestureRecognizers.Add(_touchOverlayPanGesture);
+                            });
+                    });
     }
 
     protected override void OnParentChanging(ParentChangingEventArgs args)
@@ -163,14 +254,22 @@ public class Drawer : Grid
 
     private void _touchOverlayPanGesture_PanUpdated(object? sender, PanUpdatedEventArgs e)
     {
-        if (this.Parent is not VisualElement visualParent)
+        var parentPage = this.ParentPage();
+
+        if (parentPage is null)
         {
             return;
         }
 
-        var visibleParentHeight = this.Height;
+        var visibleHeight = this.Height;
 
         var totalTranslation = this._drawerStartingTranslationY + e.TotalY;
+
+        var allowDismiss = AllowDismiss;
+
+        var bottomSafeArea = allowDismiss ? this.ParentPage()?.On<iOS>()?.SafeAreaInsets().Bottom ?? 0 : 0;
+
+        var touchBarDisplayHeight = allowDismiss ? 0 : _touchBarHeight;
 
         switch (e.StatusType)
         {
@@ -178,7 +277,7 @@ public class Drawer : Grid
                 _drawerStartingTranslationY = _mainContainer.TranslationY;
                 break;
             case GestureStatus.Running:
-                var clampedTranslation = totalTranslation.Clamp(0, visibleParentHeight - TouchBarHeight);
+                var clampedTranslation = totalTranslation.Clamp(0, visibleHeight - touchBarDisplayHeight);
                 _mainContainer.TranslationY = clampedTranslation;
                 _mainContainer.Padding = new Thickness(_mainContainer.Margin.Left, _mainContainer.Margin.Top, _mainContainer.Margin.Right, clampedTranslation);
                 break;
@@ -190,16 +289,16 @@ public class Drawer : Grid
                 var closestDrawerStop =
                     _drawerStops
                         .Select(
-                            (x, i) =>
+                            (x) =>
                             {
                                 var position =
                                     x.Measurement switch
                                     {
-                                        DrawerStopMeasurement.Fixed => x.Value,
-                                        DrawerStopMeasurement.Percentage => visibleParentHeight * x.Value,
+                                        DrawerStopMeasurement.Percentage => visibleHeight * x.Value,
+                                        _ => x.Value,
                                     };
 
-                                return (DrawerStop: x, Index: i, Position: position, Distance: Math.Abs(currTranslationY - position));
+                                return (DrawerStop: x, Position: position, Distance: Math.Abs(currTranslationY - position));
                             })
                         .OrderBy(x => x.Distance)
                         .FirstOrDefault();
@@ -214,14 +313,14 @@ public class Drawer : Grid
                             _mainContainer.Padding = new Thickness(_mainContainer.Margin.Left, _mainContainer.Margin.Top, _mainContainer.Margin.Right, x);
                         },
                         _mainContainer.TranslationY,
-                        closestDrawerStop.Position.Clamp(0, visibleParentHeight - TouchBarHeight),
+                        closestDrawerStop.Position.Clamp(0, visibleHeight + bottomSafeArea - touchBarDisplayHeight),
                         Easing.SinInOut);
 
                 animateToPosition.Commit(
                     this,
                     nameof(animateToPosition),
                     finished:
-                        (x, finished) =>
+                        (_, __) =>
                         {
                             Dispatcher.Dispatch(
                                 () =>
@@ -235,4 +334,3 @@ public class Drawer : Grid
         }
     }
 }
-
