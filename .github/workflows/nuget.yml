@@ -31,10 +31,10 @@ jobs:
             - name: Build
               run: dotnet build MauiDrawer/MauiDrawer.csproj
 
-              - name: Create the package
+            - name: Create the package
               run: dotnet pack --configuration Release  /p:AssemblyVersion=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }} /p:Version=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }} MauiDrawer/MauiDrawer.csproj
 
-              - name: Publish the package to GPR
+            - name: Publish the package to GPR
               run: dotnet nuget push MauiDrawer/bin/Release/*.nupkg
 
             - name: Publish the package to NuGet
