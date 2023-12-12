@@ -8,4 +8,3 @@ namespace MauiDrawer.Sample;
 public class MainActivity : MauiAppCompatActivity
 {
 }
-
