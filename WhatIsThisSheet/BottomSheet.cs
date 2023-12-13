@@ -2,23 +2,10 @@
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
 
-namespace MauiDrawer;
-
-public enum DrawerStopMeasurement
-{
-    Fixed = 0,
-    Percentage = 1,
-}
-
-public struct DrawerStop
-{
-    public DrawerStopMeasurement Measurement { get; set; }
-
-    public double Value { get; set; }
-}
+namespace WhatIsThisSheet;
 
 [ContentProperty(nameof(DrawerContent))]
-public class Drawer : Grid
+public class BottomSheet : Grid
 {
     private readonly double _touchBarHeight = 32d;
 
@@ -32,17 +19,17 @@ public class Drawer : Grid
 
     private readonly Shape _grabbler;
 
-    private readonly List<DrawerStop> _drawerStops = new List<DrawerStop>();
+    private readonly List<SheetStop> _drawerStops = new List<SheetStop>();
 
     private double _drawerStartingTranslationY = 0d;
 
     public static BindableProperty DrawerContentProperty =
     BindableProperty.Create(
-        nameof(DrawerContent), typeof(View), typeof(Drawer), default(View),
+        nameof(DrawerContent), typeof(View), typeof(BottomSheet), default(View),
         propertyChanged:
             (bindable, oldValue, newValue) =>
             {
-                if (bindable is not Drawer drawer)
+                if (bindable is not BottomSheet drawer)
                 {
                     return;
                 }
@@ -67,7 +54,7 @@ public class Drawer : Grid
     }
 
     public static BindableProperty AllowDismissProperty =
-        BindableProperty.Create(nameof(AllowDismiss), typeof(bool), typeof(Drawer), false);
+        BindableProperty.Create(nameof(AllowDismiss), typeof(bool), typeof(BottomSheet), false);
 
     public bool AllowDismiss
     {
@@ -76,11 +63,11 @@ public class Drawer : Grid
     }
 
     public static BindableProperty DrawerColorProperty =
-    BindableProperty.Create(nameof(DrawerColor), typeof(Color), typeof(Drawer), Colors.White,
+    BindableProperty.Create(nameof(DrawerColor), typeof(Color), typeof(BottomSheet), Colors.White,
         propertyChanged:
             (bindable, _, newValue) =>
             {
-                if (bindable is not Drawer drawer)
+                if (bindable is not BottomSheet drawer)
                 {
                     return;
                 }
@@ -97,15 +84,15 @@ public class Drawer : Grid
         set => SetValue(DrawerColorProperty, value);
     }
 
-    public Drawer()
+    public BottomSheet()
     {
         this.CascadeInputTransparent = false;
         this.InputTransparent = true;
 
-        _drawerStops.Add(new DrawerStop { Measurement = DrawerStopMeasurement.Fixed, Value = 0 });
-        _drawerStops.Add(new DrawerStop { Measurement = DrawerStopMeasurement.Percentage, Value = .33 });
-        _drawerStops.Add(new DrawerStop { Measurement = DrawerStopMeasurement.Percentage, Value = .66 });
-        _drawerStops.Add(new DrawerStop { Measurement = DrawerStopMeasurement.Percentage, Value = 1.0 });
+        _drawerStops.Add(new SheetStop { Measurement = SheetStopMeasurement.Fixed, Value = 0 });
+        _drawerStops.Add(new SheetStop { Measurement = SheetStopMeasurement.Percentage, Value = .33 });
+        _drawerStops.Add(new SheetStop { Measurement = SheetStopMeasurement.Percentage, Value = .66 });
+        _drawerStops.Add(new SheetStop { Measurement = SheetStopMeasurement.Percentage, Value = 1.0 });
 
         _grabbler =
             new RoundRectangle
@@ -281,8 +268,6 @@ public class Drawer : Grid
                 _mainContainer.TranslationY = clampedTranslation;
                 _mainContainer.Padding = new Thickness(_mainContainer.Margin.Left, _mainContainer.Margin.Top, _mainContainer.Margin.Right, clampedTranslation);
                 break;
-            case GestureStatus.Canceled:
-            case GestureStatus.Completed:
             default:
                 var currTranslationY = _mainContainer.TranslationY;
 
@@ -294,7 +279,7 @@ public class Drawer : Grid
                                 var position =
                                     x.Measurement switch
                                     {
-                                        DrawerStopMeasurement.Percentage => visibleHeight * x.Value,
+                                        SheetStopMeasurement.Percentage => visibleHeight * x.Value,
                                         _ => x.Value,
                                     };
 

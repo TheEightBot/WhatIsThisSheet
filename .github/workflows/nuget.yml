@@ -29,13 +29,13 @@ jobs:
               uses: release-kit/semver@v1.0.10
 
             - name: Build
-              run: dotnet build MauiDrawer/MauiDrawer.csproj
+              run: dotnet build WhatIsThisSheet/WhatIsThisSheet.csproj
 
             - name: Create the package
-              run: dotnet pack --configuration Release  /p:AssemblyVersion=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }} /p:Version=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }} MauiDrawer/MauiDrawer.csproj
+              run: dotnet pack --configuration Release  /p:AssemblyVersion=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }} /p:Version=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }} WhatIsThisSheet/WhatIsThisSheet.csproj
 
             - name: Publish the package to GPR
-              run: dotnet nuget push MauiDrawer/bin/Release/*.nupkg
+              run: dotnet nuget push WhatIsThisSheet/bin/Release/*.nupkg
 
             - name: Publish the package to NuGet
-              run: dotnet nuget push MauiDrawer/bin/Release/*.nupkg --api-key "${{ secrets.EIGHTBOT_NUGET_APIKEY }}" --source https://api.nuget.org/v3/index.json
+              run: dotnet nuget push WhatIsThisSheet/bin/Release/*.nupkg --api-key "${{ secrets.EIGHTBOT_NUGET_APIKEY }}" --source https://api.nuget.org/v3/index.json

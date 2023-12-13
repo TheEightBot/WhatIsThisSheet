@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 25.0.1706.7
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauiDrawer", "MauiDrawer\MauiDrawer.csproj", "{C3ED6C8E-641F-4AD0-B090-816868DFC85A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatIsThisSheet", "WhatIsThisSheet\WhatIsThisSheet.csproj", "{C3ED6C8E-641F-4AD0-B090-816868DFC85A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauiDrawer.Sample", "MauiDrawer.Sample\MauiDrawer.Sample.csproj", "{D1551D4C-6395-4FA9-A849-52D7110913BD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatIsThisSheet.Sample", "WhatIsThisSheet.Sample\WhatIsThisSheet.Sample.csproj", "{D1551D4C-6395-4FA9-A849-52D7110913BD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "[ Actions ]", "[ Actions ]", "{2BBE5391-A783-4CAB-80B6-5FEF32AF7663}"
 	ProjectSection(SolutionItems) = preProject
@@ -22,7 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "[ Solution Items ]", "[ Sol
 		Directory.build.props = Directory.build.props
 		.gitattributes = .gitattributes
 		.editorconfig = .editorconfig
-		MauiDrawer.sln = MauiDrawer.sln
+		WhatIsThisSheet.sln = WhatIsThisSheet.sln
 	EndProjectSection
 EndProject
 Global

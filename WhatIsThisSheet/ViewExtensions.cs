@@ -1,4 +1,4 @@
-﻿namespace MauiDrawer;
+﻿namespace WhatIsThisSheet;
 
 public static class ViewExtensions
 {
