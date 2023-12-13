@@ -30,6 +30,7 @@
                 <Image Source="dotnet_bot.png" />
                 <Label Text="This is a picture of a car" />
                 <Button Text="Toggle Background Interaction" Clicked="ToggleBackgroundInteraction_Clicked" />
+                <Button x:Name="LockPosition" Text="Lock Position" Clicked="LockPosition_Clicked" />
             </StackLayout>
         </wits:BottomSheet>
     </Grid>

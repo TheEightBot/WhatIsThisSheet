@@ -41,4 +41,9 @@ public partial class MainPage : ContentPage
     {
         MainBottomSheet.AllowBackgroundInteraction = !MainBottomSheet.AllowBackgroundInteraction;
     }
+
+    private void LockPosition_Clicked(object sender, System.EventArgs e)
+    {
+        MainBottomSheet.LockPosition = !MainBottomSheet.LockPosition;
+    }
 }
