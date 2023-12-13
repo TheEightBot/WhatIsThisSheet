@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace WhatIsThisSheet;
 
-[ContentProperty(nameof(DrawerContent))]
+[ContentProperty(nameof(SheetContent))]
 public class BottomSheet : Grid
 {
     private readonly double _touchBarHeight = 32d;
@@ -19,38 +19,49 @@ public class BottomSheet : Grid
 
     private readonly Shape _grabbler;
 
-    private readonly List<SheetStop> _drawerStops = new List<SheetStop>();
+    private readonly List<SheetStop> _sheetStops = new List<SheetStop>();
 
-    private double _drawerStartingTranslationY = 0d;
+    private readonly TapGestureRecognizer _backgroundInteractionTapGesture = new();
 
-    public static BindableProperty DrawerContentProperty =
-    BindableProperty.Create(
-        nameof(DrawerContent), typeof(View), typeof(BottomSheet), default(View),
-        propertyChanged:
-            (bindable, oldValue, newValue) =>
-            {
-                if (bindable is not BottomSheet drawer)
-                {
-                    return;
-                }
+    private double _sheetStartingTranslationY = 0d;
 
-                if (oldValue is View oldView)
-                {
-                    drawer._contentContainer.Remove(oldView);
-                }
+    public static BindableProperty LockPositionProperty =
+    BindableProperty.Create(nameof(LockPosition), typeof(bool), typeof(BottomSheet), default(bool));
 
-                if (newValue is View newView)
-                {
-                    Grid.SetColumn(newView, 0);
-                    Grid.SetRow(newView, 1);
-                    drawer._contentContainer.Add(newView);
-                }
-            });
-
-    public View DrawerContent
+    public bool LockPosition
     {
-        get => (View)GetValue(DrawerContentProperty);
-        set => SetValue(DrawerContentProperty, value);
+        get => (bool)GetValue(LockPositionProperty);
+        set => SetValue(LockPositionProperty, value);
+    }
+
+    public static BindableProperty SheetContentProperty =
+        BindableProperty.Create(
+            nameof(SheetContent), typeof(View), typeof(BottomSheet), default(View),
+            propertyChanged:
+                (bindable, oldValue, newValue) =>
+                {
+                    if (bindable is not BottomSheet sheet)
+                    {
+                        return;
+                    }
+
+                    if (oldValue is View oldView)
+                    {
+                        sheet._contentContainer.Remove(oldView);
+                    }
+
+                    if (newValue is View newView)
+                    {
+                        Grid.SetColumn(newView, 0);
+                        Grid.SetRow(newView, 1);
+                        sheet._contentContainer.Add(newView);
+                    }
+                });
+
+    public View SheetContent
+    {
+        get => (View)GetValue(SheetContentProperty);
+        set => SetValue(SheetContentProperty, value);
     }
 
     public static BindableProperty AllowDismissProperty =
@@ -62,37 +73,69 @@ public class BottomSheet : Grid
         set => SetValue(AllowDismissProperty, value);
     }
 
-    public static BindableProperty DrawerColorProperty =
-    BindableProperty.Create(nameof(DrawerColor), typeof(Color), typeof(BottomSheet), Colors.White,
+    public static BindableProperty AllowBackgroundInteractionProperty =
+        BindableProperty.Create(nameof(AllowBackgroundInteraction), typeof(bool), typeof(BottomSheet), true,
+            propertyChanged: (bindable, _, newValue) =>
+            {
+                if (bindable is not BottomSheet bs || newValue is not bool newBool)
+                {
+                    return;
+                }
+
+                bs.GestureRecognizers.Clear();
+
+                bs.InputTransparent = newBool;
+
+                if (newBool)
+                {
+                    return;
+                }
+
+                bs.GestureRecognizers.Add(bs._backgroundInteractionTapGesture);
+            });
+
+    public bool AllowBackgroundInteraction
+    {
+        get => (bool)GetValue(AllowBackgroundInteractionProperty);
+        set => SetValue(AllowBackgroundInteractionProperty, value);
+    }
+
+    public static BindableProperty SheetColorProperty =
+    BindableProperty.Create(nameof(SheetColor), typeof(Color), typeof(BottomSheet), Colors.White,
         propertyChanged:
             (bindable, _, newValue) =>
             {
-                if (bindable is not BottomSheet drawer)
+                if (bindable is not BottomSheet sheet)
                 {
                     return;
                 }
 
                 if (newValue is Color newColor)
                 {
-                    drawer._mainContainer.BackgroundColor = newColor;
+                    sheet._mainContainer.BackgroundColor = newColor;
                 }
             });
 
-    public Color DrawerColor
+    public Color SheetColor
     {
-        get => (Color)GetValue(DrawerColorProperty);
-        set => SetValue(DrawerColorProperty, value);
+        get => (Color)GetValue(SheetColorProperty);
+        set => SetValue(SheetColorProperty, value);
     }
 
     public BottomSheet()
     {
         this.CascadeInputTransparent = false;
-        this.InputTransparent = true;
+        this.InputTransparent = AllowBackgroundInteraction;
 
-        _drawerStops.Add(new SheetStop { Measurement = SheetStopMeasurement.Fixed, Value = 0 });
-        _drawerStops.Add(new SheetStop { Measurement = SheetStopMeasurement.Percentage, Value = .33 });
-        _drawerStops.Add(new SheetStop { Measurement = SheetStopMeasurement.Percentage, Value = .66 });
-        _drawerStops.Add(new SheetStop { Measurement = SheetStopMeasurement.Percentage, Value = 1.0 });
+        if (!AllowBackgroundInteraction)
+        {
+            this.GestureRecognizers.Add(_backgroundInteractionTapGesture);
+        }
+
+        _sheetStops.Add(new SheetStop { Measurement = SheetStopMeasurement.Fixed, Value = 0 });
+        _sheetStops.Add(new SheetStop { Measurement = SheetStopMeasurement.Percentage, Value = .33 });
+        _sheetStops.Add(new SheetStop { Measurement = SheetStopMeasurement.Percentage, Value = .66 });
+        _sheetStops.Add(new SheetStop { Measurement = SheetStopMeasurement.Percentage, Value = 1.0 });
 
         _grabbler =
             new RoundRectangle
@@ -125,11 +168,17 @@ public class BottomSheet : Grid
         _mainContainer =
             new Border
             {
+                InputTransparent = false,
+                GestureRecognizers =
+                {
+                    // TODO: We shouldn't need this and should just be able to use input transparent
+                    new TapGestureRecognizer(),
+                },
                 StrokeShape = new RoundRectangle
                 {
                     CornerRadius = new CornerRadius(24, 24, 0, 0),
                 },
-                BackgroundColor = DrawerColor,
+                BackgroundColor = SheetColor,
                 Content = _contentContainer,
                 Margin = -.5f,
             };
@@ -151,6 +200,11 @@ public class BottomSheet : Grid
 
     public void Dismiss()
     {
+        if (LockPosition)
+        {
+            return;
+        }
+
         _touchOverlay.GestureRecognizers.Clear();
 
         var visibleHeight = this.Height;
@@ -188,8 +242,13 @@ public class BottomSheet : Grid
                     });
     }
 
-    public void Display(double displayPercentage)
+    public void Show(double displayPercentage)
     {
+        if (LockPosition)
+        {
+            return;
+        }
+
         _touchOverlay.GestureRecognizers.Clear();
 
         var visibleHeight = this.Height;
@@ -241,6 +300,11 @@ public class BottomSheet : Grid
 
     private void _touchOverlayPanGesture_PanUpdated(object? sender, PanUpdatedEventArgs e)
     {
+        if (LockPosition)
+        {
+            return;
+        }
+
         var parentPage = this.ParentPage();
 
         if (parentPage is null)
@@ -250,7 +314,7 @@ public class BottomSheet : Grid
 
         var visibleHeight = this.Height;
 
-        var totalTranslation = this._drawerStartingTranslationY + e.TotalY;
+        var totalTranslation = this._sheetStartingTranslationY + e.TotalY;
 
         var allowDismiss = AllowDismiss;
 
@@ -261,7 +325,7 @@ public class BottomSheet : Grid
         switch (e.StatusType)
         {
             case GestureStatus.Started:
-                _drawerStartingTranslationY = _mainContainer.TranslationY;
+                _sheetStartingTranslationY = _mainContainer.TranslationY;
                 break;
             case GestureStatus.Running:
                 var clampedTranslation = totalTranslation.Clamp(0, visibleHeight - touchBarDisplayHeight);
@@ -271,8 +335,8 @@ public class BottomSheet : Grid
             default:
                 var currTranslationY = _mainContainer.TranslationY;
 
-                var closestDrawerStop =
-                    _drawerStops
+                var closestsheetStop =
+                    _sheetStops
                         .Select(
                             (x) =>
                             {
@@ -283,7 +347,7 @@ public class BottomSheet : Grid
                                         _ => x.Value,
                                     };
 
-                                return (DrawerStop: x, Position: position, Distance: Math.Abs(currTranslationY - position));
+                                return (sheetStop: x, Position: position, Distance: Math.Abs(currTranslationY - position));
                             })
                         .OrderBy(x => x.Distance)
                         .FirstOrDefault();
@@ -298,7 +362,7 @@ public class BottomSheet : Grid
                             _mainContainer.Padding = new Thickness(_mainContainer.Margin.Left, _mainContainer.Margin.Top, _mainContainer.Margin.Right, x);
                         },
                         _mainContainer.TranslationY,
-                        closestDrawerStop.Position.Clamp(0, visibleHeight + bottomSafeArea - touchBarDisplayHeight),
+                        closestsheetStop.Position.Clamp(0, visibleHeight + bottomSafeArea - touchBarDisplayHeight),
                         Easing.SinInOut);
 
                 animateToPosition.Commit(

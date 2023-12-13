@@ -6,10 +6,10 @@
   </PropertyGroup>
       <PropertyGroup>
         <PackageProjectUrl>https://eight.bot</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/TheEightBot/Componentizer4k</RepositoryUrl>
+        <RepositoryUrl>https://github.com/TheEightBot/WhatIsThisSheet</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageTags>.NET MAUI;MVVM;Navigation;Component;UI Control;Eight-Bot</PackageTags>
-        <Description>A bottom drawer or bottom sheet-like component for .NET MAUI.</Description>
+        <PackageTags>.NET MAUI;Bottom Sheet;Navigation;Component;UI Control;Eight-Bot</PackageTags>
+        <Description>The .NET MAUI Bottom Sheet component is a user interface element that slides up from the bottom of the screen to reveal more content. It's a versatile component that can be used for various purposes such as displaying additional information, presenting a list of options, or providing a secondary navigation.</Description>
         <PackageIcon>logo.png</PackageIcon>
     </PropertyGroup>
   <ItemGroup>

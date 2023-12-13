@@ -19,16 +19,26 @@ public partial class MainPage : ContentPage
 
     private void Dismiss_Clicked(object sender, System.EventArgs e)
     {
-        MainDrawer.Dismiss();
+        MainBottomSheet.Dismiss();
     }
 
     private void Switch_Toggled(object sender, Microsoft.Maui.Controls.ToggledEventArgs e)
     {
-        MainDrawer.AllowDismiss = !MainDrawer.AllowDismiss;
+        MainBottomSheet.AllowDismiss = !MainBottomSheet.AllowDismiss;
     }
 
     private void Show_Clicked(object sender, System.EventArgs e)
     {
-        MainDrawer.Display(.65d);
+        MainBottomSheet.Show(.65d);
+    }
+
+    private void GetTapped_Clicked(object sender, System.EventArgs e)
+    {
+        Console.WriteLine("Tapped Out!");
+    }
+
+    private void ToggleBackgroundInteraction_Clicked(object sender, System.EventArgs e)
+    {
+        MainBottomSheet.AllowBackgroundInteraction = !MainBottomSheet.AllowBackgroundInteraction;
     }
 }

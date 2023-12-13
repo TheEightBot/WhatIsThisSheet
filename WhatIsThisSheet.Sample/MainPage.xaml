@@ -1,11 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:mauiDrawer="clr-namespace:MauiDrawer;assembly=MauiDrawer"
-             x:Class="MauiDrawer.Sample.MainPage"
-             >
+             xmlns:wits="http://what.is.this.sheet/schemas/controls"
+             x:Class="MauiDrawer.Sample.MainPage">
 
-    <Grid ColumnDefinitions="*" RowDefinitions="auto,auto,auto,auto,*">
+    <Grid ColumnDefinitions="*" RowDefinitions="auto,auto,auto,auto,auto,*" RowSpacing="8">
         <Button
             Text="Tapped" TextColor="Blue" Clicked="Button_Clicked" 
             VerticalOptions="Start" HorizontalOptions="Center" 
@@ -20,16 +19,19 @@
         <Button Text="Show" Clicked="Show_Clicked"
             Grid.Row="3" />
 
-        <mauiDrawer:Drawer x:Name="MainDrawer"
+        <Button Text="GetTapped" Clicked="GetTapped_Clicked"
+            Grid.Row="4" />
+
+        <wits:BottomSheet x:Name="MainBottomSheet"
             Grid.Row="0"
-            Grid.RowSpan="5">
-            <ScrollView>
-                <StackLayout Padding="8" Spacing="8">
-                    <Image Source="dotnet_bot.png" />
-                    <Label Text="This is a car" />
-                </StackLayout>
-            </ScrollView>
-        </mauiDrawer:Drawer>
+            Grid.RowSpan="6">
+            <StackLayout Padding="8" Spacing="8">
+                <Label Text="Let there be text..." HeightRequest="80" />
+                <Image Source="dotnet_bot.png" />
+                <Label Text="This is a picture of a car" />
+                <Button Text="Toggle Background Interaction" Clicked="ToggleBackgroundInteraction_Clicked" />
+            </StackLayout>
+        </wits:BottomSheet>
     </Grid>
 
 </ContentPage>

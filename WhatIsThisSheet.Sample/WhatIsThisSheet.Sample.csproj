@@ -66,6 +66,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\MauiDrawer\MauiDrawer.csproj" />
+	  <ProjectReference Include="..\WhatIsThisSheet\WhatIsThisSheet.csproj" />
 	</ItemGroup>
 </Project>
