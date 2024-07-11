@@ -24,7 +24,7 @@ public partial class MainPage : ContentPage
 
     private void Switch_Toggled(object sender, Microsoft.Maui.Controls.ToggledEventArgs e)
     {
-        MainBottomSheet.AllowDismiss = !MainBottomSheet.AllowDismiss;
+        MainBottomSheet.AllowFullDismiss = !MainBottomSheet.AllowFullDismiss;
     }
 
     private void Show_Clicked(object sender, System.EventArgs e)

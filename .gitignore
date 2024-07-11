@@ -400,3 +400,5 @@ FodyWeavers.xsd
 *.DS_Store
 
 .idea/
+
+*.meteor/

@@ -1,36 +1,57 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:wits="http://what.is.this.sheet/schemas/controls"
-             x:Class="MauiDrawer.Sample.MainPage">
+<ContentPage
+    x:Class="MauiDrawer.Sample.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:wits="http://what.is.this.sheet/schemas/controls"
+    BackgroundColor="LightYellow">
 
-    <Grid ColumnDefinitions="*" RowDefinitions="auto,auto,auto,auto,auto,*" RowSpacing="8">
+    <Grid
+        Padding="8"
+        ColumnDefinitions="*"
+        IgnoreSafeArea="True"
+        RowDefinitions="auto,auto,auto,auto,auto,*"
+        RowSpacing="8">
+
         <Button
-            Text="Tapped" TextColor="Blue" Clicked="Button_Clicked" 
-            VerticalOptions="Start" HorizontalOptions="Center" 
-            Grid.Row="0"/>
+            Grid.Row="1"
+            Clicked="Dismiss_Clicked"
+            Text="Dismiss" />
 
-        <Button Text="Dismiss" Clicked="Dismiss_Clicked"
-            Grid.Row="1" />
+        <Switch
+            x:Name="HideOnDismiss"
+            Grid.Row="2"
+            Toggled="Switch_Toggled" />
 
-        <Switch x:Name="HideOnDismiss" Toggled="Switch_Toggled"
-            Grid.Row="2" />
+        <Button
+            Grid.Row="3"
+            Clicked="Show_Clicked"
+            Text="Show" />
 
-        <Button Text="Show" Clicked="Show_Clicked"
-            Grid.Row="3" />
+        <Button
+            Grid.Row="4"
+            Clicked="GetTapped_Clicked"
+            Text="GetTapped" />
 
-        <Button Text="GetTapped" Clicked="GetTapped_Clicked"
-            Grid.Row="4" />
-
-        <wits:BottomSheet x:Name="MainBottomSheet"
+        <wits:BottomSheet
+            x:Name="MainBottomSheet"
             Grid.Row="0"
-            Grid.RowSpan="6">
+            Grid.RowSpan="6"
+            Margin="-8">
+            <wits:BottomSheet.SheetStops>
+                <wits:SheetStop Measurement="Fixed" Value="20" />
+                <wits:SheetStop Measurement="Percentage" Value=".33" />
+                <wits:SheetStop Measurement="Percentage" Value="0.0" />
+            </wits:BottomSheet.SheetStops>
             <StackLayout Padding="8" Spacing="8">
-                <Label Text="Let there be text..." HeightRequest="80" />
+                <Label HeightRequest="80" Text="Let there be text..." />
                 <Image Source="dotnet_bot.png" />
                 <Label Text="This is a picture of a car" />
-                <Button Text="Toggle Background Interaction" Clicked="ToggleBackgroundInteraction_Clicked" />
-                <Button x:Name="LockPosition" Text="Lock Position" Clicked="LockPosition_Clicked" />
+                <Button Clicked="ToggleBackgroundInteraction_Clicked" Text="Toggle Background Interaction" />
+                <Button
+                    x:Name="LockPosition"
+                    Clicked="LockPosition_Clicked"
+                    Text="Lock Position" />
             </StackLayout>
         </wits:BottomSheet>
     </Grid>
