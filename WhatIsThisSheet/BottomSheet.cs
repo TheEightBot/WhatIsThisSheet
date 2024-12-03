@@ -9,7 +9,23 @@ namespace WhatIsThisSheet;
 [ContentProperty(nameof(SheetContent))]
 public class BottomSheet : Grid
 {
+    private readonly TapGestureRecognizer _backgroundInteractionTapGesture = new();
+
+    private readonly Grid _contentContainer;
+
+    private readonly Shape _grabbler;
+
+    private readonly Border _mainContainer;
+
+    private readonly double _touchBarHeight = 32d;
+
+    private readonly BoxView _touchOverlay;
+
+    private readonly PanGestureRecognizer _touchOverlayPanGesture;
+
     private bool _hasInitialHeight;
+
+    private double _sheetStartingTranslationY;
 
     public static BindableProperty LockPositionProperty =
         BindableProperty.Create(nameof(LockPosition), typeof(bool), typeof(BottomSheet), default(bool));
@@ -19,7 +35,7 @@ public class BottomSheet : Grid
             nameof(SheetStops),
             typeof(List<SheetStop>),
             typeof(BottomSheet),
-            new List<SheetStop>());
+            defaultValueCreator: _ => new List<SheetStop>());
 
     public static BindableProperty SheetContentProperty =
         BindableProperty.Create(
@@ -27,28 +43,31 @@ public class BottomSheet : Grid
             typeof(View),
             typeof(BottomSheet),
             propertyChanged:
-            (bindable, oldValue, newValue) =>
-            {
-                if (bindable is not BottomSheet sheet)
+                (bindable, oldValue, newValue) =>
                 {
-                    return;
-                }
+                    if (bindable is not BottomSheet sheet)
+                    {
+                        return;
+                    }
 
-                if (oldValue is View oldView)
-                {
-                    sheet._contentContainer.Remove(oldView);
-                }
+                    if (oldValue is View oldView)
+                    {
+                        sheet._contentContainer.Remove(oldView);
+                    }
 
-                if (newValue is View newView)
-                {
-                    SetColumn(newView, 0);
-                    SetRow(newView, 1);
-                    sheet._contentContainer.Add(newView);
-                }
-            });
+                    if (newValue is View newView)
+                    {
+                        SetColumn(newView, 0);
+                        SetRow(newView, 1);
+                        sheet._contentContainer.Add(newView);
+                    }
+                });
 
     public static BindableProperty AllowFullDismissProperty =
         BindableProperty.Create(nameof(AllowFullDismiss), typeof(bool), typeof(BottomSheet), false);
+
+    public static BindableProperty StartExpandedProperty =
+            BindableProperty.Create(nameof(StartExpanded), typeof(bool), typeof(BottomSheet), true);
 
     public static BindableProperty AllowBackgroundInteractionProperty =
         BindableProperty.Create(
@@ -56,24 +75,25 @@ public class BottomSheet : Grid
             typeof(bool),
             typeof(BottomSheet),
             true,
-            propertyChanged: (bindable, _, newValue) =>
-            {
-                if (bindable is not BottomSheet bs || newValue is not bool newBool)
+            propertyChanged:
+                (bindable, _, newValue) =>
                 {
-                    return;
-                }
+                    if (bindable is not BottomSheet bs || newValue is not bool newBool)
+                    {
+                        return;
+                    }
 
-                bs.GestureRecognizers.Clear();
+                    bs.GestureRecognizers.Clear();
 
-                bs.InputTransparent = newBool;
+                    bs.InputTransparent = newBool;
 
-                if (newBool)
-                {
-                    return;
-                }
+                    if (newBool)
+                    {
+                        return;
+                    }
 
-                bs.GestureRecognizers.Add(bs._backgroundInteractionTapGesture);
-            });
+                    bs.GestureRecognizers.Add(bs._backgroundInteractionTapGesture);
+                });
 
     public static BindableProperty SheetColorProperty =
         BindableProperty.Create(
@@ -82,33 +102,60 @@ public class BottomSheet : Grid
             typeof(BottomSheet),
             Colors.White,
             propertyChanged:
-            (bindable, _, newValue) =>
-            {
-                if (bindable is not BottomSheet sheet)
+                (bindable, _, newValue) =>
                 {
-                    return;
-                }
+                    if (bindable is not BottomSheet sheet)
+                    {
+                        return;
+                    }
 
-                if (newValue is Color newColor)
-                {
-                    sheet._mainContainer.BackgroundColor = newColor;
-                }
-            });
+                    if (newValue is Color newColor)
+                    {
+                        sheet._mainContainer.BackgroundColor = newColor;
+                    }
+                });
 
-    private readonly TapGestureRecognizer _backgroundInteractionTapGesture = new();
+    public bool LockPosition
+    {
+        get => (bool)this.GetValue(LockPositionProperty);
+        set => this.SetValue(LockPositionProperty, value);
+    }
 
-    private readonly Grid _contentContainer;
+    public List<SheetStop> SheetStops
+    {
+        get => (List<SheetStop>)this.GetValue(SheetStopsProperty);
+        private set => this.SetValue(SheetStopsProperty, value);
+    }
 
-    private readonly Shape _grabbler;
+    public View SheetContent
+    {
+        get => (View)this.GetValue(SheetContentProperty);
+        set => this.SetValue(SheetContentProperty, value);
+    }
 
-    private readonly Border _mainContainer;
-    private readonly double _touchBarHeight = 32d;
+    public bool AllowFullDismiss
+    {
+        get => (bool)this.GetValue(AllowFullDismissProperty);
+        set => this.SetValue(AllowFullDismissProperty, value);
+    }
 
-    private readonly BoxView _touchOverlay;
+    public bool StartExpanded
+    {
+        get => (bool)this.GetValue(StartExpandedProperty);
+        set => this.SetValue(StartExpandedProperty, value);
+    }
 
-    private readonly PanGestureRecognizer _touchOverlayPanGesture;
+    public bool AllowBackgroundInteraction
+    {
+        get => (bool)this.GetValue(AllowBackgroundInteractionProperty);
+        set => this.SetValue(AllowBackgroundInteractionProperty, value);
+    }
 
-    private double _sheetStartingTranslationY;
+    public Color SheetColor
+    {
+        get => (Color)this.GetValue(SheetColorProperty);
+        set => this.SetValue(SheetColorProperty, value);
+    }
 
     public BottomSheet()
     {
@@ -174,42 +221,6 @@ public class BottomSheet : Grid
         this.Loaded += this.BottomSheet_Loaded;
     }
 
-    public bool LockPosition
-    {
-        get => (bool)this.GetValue(LockPositionProperty);
-        set => this.SetValue(LockPositionProperty, value);
-    }
-
-    public List<SheetStop> SheetStops
-    {
-        get => (List<SheetStop>)this.GetValue(SheetStopsProperty);
-        private set => this.SetValue(SheetStopsProperty, value);
-    }
-
-    public View SheetContent
-    {
-        get => (View)this.GetValue(SheetContentProperty);
-        set => this.SetValue(SheetContentProperty, value);
-    }
-
-    public bool AllowFullDismiss
-    {
-        get => (bool)this.GetValue(AllowFullDismissProperty);
-        set => this.SetValue(AllowFullDismissProperty, value);
-    }
-
-    public bool AllowBackgroundInteraction
-    {
-        get => (bool)this.GetValue(AllowBackgroundInteractionProperty);
-        set => this.SetValue(AllowBackgroundInteractionProperty, value);
-    }
-
-    public Color SheetColor
-    {
-        get => (Color)this.GetValue(SheetColorProperty);
-        set => this.SetValue(SheetColorProperty, value);
-    }
-
     protected override void OnPropertyChanged(string? propertyName = null)
     {
         base.OnPropertyChanged(propertyName);
@@ -224,7 +235,13 @@ public class BottomSheet : Grid
         if (!this._hasInitialHeight && height > 0.0d)
         {
             this._hasInitialHeight = true;
-            AnimateToPosition(0.0d);
+
+            AnimateToPosition(StartExpanded ? 0.0d : height);
+        }
+        else
+        {
+            double currTranslationY = this._mainContainer.TranslationY;
+            this.AnimateToPosition(currTranslationY);
         }
     }
 
